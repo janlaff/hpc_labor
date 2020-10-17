@@ -21,8 +21,10 @@ int main(int argc, char **argv)
 	#pragma omp parallel for shared(globalCount)
 	for (int i = 0; i < globalSamples; ++i)
 	{
-		#pragma omp critical
-		globalCount += throw();
+		int tmp = throw();
+
+		#pragma omp atomic
+		globalCount += tmp;
 	}
 
 	double pi = 4.0 *(double) globalCount / (double)(globalSamples);

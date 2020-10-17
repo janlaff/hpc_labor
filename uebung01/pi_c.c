@@ -21,7 +21,6 @@ int main(int argc, char **argv)
 	#pragma omp parallel for reduction(+:globalCount)
 	for (int i = 0; i < globalSamples; ++i)
 	{
-		#pragma omp critical
 		globalCount += throw();
 	}
 

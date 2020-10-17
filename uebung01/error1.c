@@ -12,7 +12,9 @@
 
 /*
 Bug wurde behoben, das ausgabe array c wurde nicht als private markiert
-und somit haben sich die berechnungen gegenseitig beeinflusst
+und somit haben sich die berechnungen gegenseitig beeinflusst.
+Außerdem ein deadlock bei print_results, der die ausgabe done and synchronised
+verhinder hat.
 */
 
 int main(int argc, char *argv[])
@@ -86,8 +88,6 @@ void print_results(float array[N], int tid, int section)
 			}
 		}
 		printf("\n");
+		printf("Thread %d done and synchronized.\n", tid);
 	} /***end of critical ***/
-
-	#pragma omp barrier
-	printf("Thread %d done and synchronized.\n", tid);
 }

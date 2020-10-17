@@ -4,6 +4,14 @@
 #include <omp.h>
 #define TRYS 5000000
 
+/*
+
+Einstellung der Threads fix auf 6 über num_threads gesetzt,
+falls einstellung durch nutzer nötig dieses statement entfernen
+und über environment variable oder argumente einstellen
+
+*/
+
 static int throw ()
 {
 	double x, y;
@@ -20,7 +28,7 @@ int main(int argc, char **argv)
 	int *hits;
 	int tid;
 
-	#pragma omp parallel shared(hits) private(tid)
+	#pragma omp parallel shared(hits) private(tid) num_threads(6)
 	{
 		tid = omp_get_thread_num();
 
