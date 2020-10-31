@@ -14,12 +14,13 @@
 #define calcIndex(width, x,y)  ((y)*(width) + (x))
 
 
-static int numRows = 2, numColumns = 1;
+static int numRows = 10, numColumns = 10;
 
 long TimeSteps = 100;
 
-void writeVTK2(long timestep, double *data, char prefix[1024], int offX, int offY, int w, int h, int totalFieldWidth) {
+void writeVTK2(long timestep, double *data, char prefix[1024], int offX, int offY, int w, int h, int fieldWidth) {
   char filename[2048];  
+  int x,y; 
   
   int offsetX=offX;
   int offsetY=offY;
@@ -40,19 +41,17 @@ void writeVTK2(long timestep, double *data, char prefix[1024], int offX, int off
   fprintf(fp, "_");
   fwrite((unsigned char*)&nxy, sizeof(long), 1, fp);
 
-  for (int y = offY + h; y > offY; y--) {
-    for (int x = offX; x < offX + w; x++) {
-      float value = data[calcIndex(totalFieldWidth, x, y)];
+  for (y = offsetY; y < offsetY + h; y++) {
+    for (x = offsetX; x < offsetX + w; x++) {
+      float value = data[calcIndex(fieldWidth, x,y)];
       fwrite((unsigned char*)&value, sizeof(float), 1, fp);
     }
   }
-
+  
   fprintf(fp, "\n</AppendedData>\n");
   fprintf(fp, "</VTKFile>\n");
   fclose(fp);
 }
-
-
 void show(double* currentfield, int w, int h) {
   printf("\033[H");
   int x,y;
