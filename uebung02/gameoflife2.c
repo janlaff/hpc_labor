@@ -14,11 +14,11 @@
 #define calcIndex(width, x,y)  ((y)*(width) + (x))
 
 
-static int thX = 3, thY = 3;
+static int numRows = 2, numColumns = 1;
 
 long TimeSteps = 100;
 
-void writeVTK2(long timestep, double *data, char prefix[1024], int offX, int offY, int w, int h) {
+void writeVTK2(long timestep, double *data, char prefix[1024], int offX, int offY, int w, int h, int totalFieldWidth) {
   char filename[2048];  
   
   int offsetX=offX;
@@ -40,9 +40,9 @@ void writeVTK2(long timestep, double *data, char prefix[1024], int offX, int off
   fprintf(fp, "_");
   fwrite((unsigned char*)&nxy, sizeof(long), 1, fp);
 
-  for (int y = offY; y < offY + h; y++) {
+  for (int y = offY + h; y > offY; y--) {
     for (int x = offX; x < offX + w; x++) {
-      float value = data[calcIndex(h, x,y)];
+      float value = data[calcIndex(totalFieldWidth, x, y)];
       fwrite((unsigned char*)&value, sizeof(float), 1, fp);
     }
   }
@@ -77,19 +77,20 @@ void show(double* currentfield, int w, int h) {
 
 void evolve(long t, double* currentfield, double* newfield, int w, int h) {
 
-  #pragma omp parallel
+  #pragma omp parallel num_threads(numRows * numColumns)
   {
     int this_thread = omp_get_thread_num();
-    int num_threads = omp_get_num_threads();
 
-    int rectangleSideLengthX = (w * h) / thX;
-    int rectangleSideLengthY = (w * h) / thY;
+    int rectWidth = w / numColumns;
+    int rectHeight = h / numRows;
 
-    int startingPositionX = (this_thread * rectangleSideLengthX) % w;
-    int startingPositionY =  rectangleSideLengthY * (int)floor((this_thread * rectangleSideLengthY) / w);
+    int yIndex = this_thread * rectWidth / w;
 
-    for (int x = startingPositionX; x < startingPositionX + rectangleSideLengthX && x < w; x++) {
-      for (int y = startingPositionY; y < startingPositionY + rectangleSideLengthY && y < h; y++) {
+    int startingPositionX = (this_thread * rectWidth) % w;
+    int startingPositionY =  rectHeight * yIndex;
+
+    for (int x = startingPositionX; x < startingPositionX + rectWidth; x++) {
+      for (int y = startingPositionY; y < startingPositionY + rectHeight; y++) {
 
         double activeCount = 0;
         activeCount += getCellValue(x - 1, y, w, h, currentfield);
@@ -113,14 +114,10 @@ void evolve(long t, double* currentfield, double* newfield, int w, int h) {
       }
     }
 
-    int xLength = fmin(startingPositionX + rectangleSideLengthX, w) - startingPositionX;
-    int yLength = fmin(startingPositionY + rectangleSideLengthY, h) - startingPositionY;
-
     char prefix[256] = {0};
-
     sprintf(prefix, "gol-%d", this_thread);
 
-    writeVTK2(t,currentfield, prefix, startingPositionX, startingPositionY, xLength, yLength);
+    writeVTK2(t,currentfield, prefix, startingPositionX, startingPositionY, rectWidth, rectHeight, w);
   }
 }
  
