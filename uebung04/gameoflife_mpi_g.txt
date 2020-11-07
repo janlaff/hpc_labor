@@ -1,0 +1,3 @@
+Das Spielfeld muss in beiden richtungen teilbar durch die anzahl der gewünschten Threads sein.
+Randaustausch wird komplexer da alle seiten ausgetauscht werden müssen.
+Gleiches Vorgehen wie bei 1D, nur in beiden Achsen.

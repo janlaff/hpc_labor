@@ -52,6 +52,7 @@ void writeVTK2(long timestep, double *data, char prefix[1024], int offX, int off
   fprintf(fp, "</VTKFile>\n");
   fclose(fp);
 }
+
 void show(double* currentfield, int w, int h) {
   printf("\033[H");
   int x,y;
